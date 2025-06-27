@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+
+  postgresdb:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=testapi
+      - POSTGRES_PASSWORD=fizznbuzz
+      - POSTGRES_DB=testdb
+    volumes:
+      - ./init/database:/docker-entrypoint-initdb.d
+
+  fizz-and-buzz:
+    env_file:
+      - .env
+    environment:
+      - DATABASE_HOST=postgresdb
+      - DATABASE_PORT=5432
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgresdb
+    ports:
+      - "8080:8080"
+    command: "./fizz-and-buzz-api"

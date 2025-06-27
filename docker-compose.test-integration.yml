@@ -1,0 +1,26 @@
+version: "3.7"
+services:
+
+  postgresdb_integration_tests:
+    image: postgres:14.0
+    environment:
+      - POSTGRES_USER=testapi_integration_tests
+      - POSTGRES_PASSWORD=fizznbuzz_integration_tests
+      - POSTGRES_DB=testdb_integration_tests
+    volumes:
+      - ./init/database_integration_tests:/docker-entrypoint-initdb.d
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.integration_tests
+    environment:
+      - DATABASE_HOST=postgresdb_integration_tests
+      - DATABASE_PORT=5432
+    depends_on:
+      - postgresdb_integration_tests
+    volumes:
+      - .:/app
+    ports:
+      - "9000:9000"
+    command: sh -c "/wait-for-it database:5432 -- go test ./tests/integration/... -p 1 -v -count=1"
